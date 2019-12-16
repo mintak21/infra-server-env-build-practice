@@ -1,11 +1,10 @@
 import os
 
 # Sever Socket
-host = '0.0.0.0'  # Flaskは外部公開を許していないので、基本これ
+host = '127.0.0.1'
 port = os.getenv('PORT', 9876)
 
 bind = str(host) + ':' + str(port)
-# bind = 'unix:/tmp/nginx.socket'
 
 # Debugging
 reload = True

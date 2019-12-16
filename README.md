@@ -44,6 +44,7 @@ nginx -s stop
 
 - オプション
    - -c {CONFIG_FILE} : 設定ファイルの指定。default: (/usr/local)/etc/nginx/nginx.conf
+   ※どうも相対パスだと、カレントからではなくてnginxのルートパスからの相対パスになっている様子
 
 ### Configファイルの設定
 - 一例
@@ -61,17 +62,17 @@ http {
     server {
     	listen  9123;
     	server_name INFRA-PRACTICE-NGINX;
-	charset UTF-8;
+		charset UTF-8;
 
-	proxy_set_header    Host    $host;
-	proxy_set_header    X-Real-IP    $remote_addr;
+		proxy_set_header    Host    $host;
+		proxy_set_header    X-Real-IP    $remote_addr;
         proxy_set_header    X-Forwarded-Host       $host;
         proxy_set_header    X-Forwarded-Server    $host;
         proxy_set_header    X-Forwarded-For    $proxy_add_x_forwarded_for;
 
         # localhost:9123/をporxy_passにリバースプロキシでつなぐ
     	location / {
-        	proxy_pass http://0.0.0.0:9876;
+        	proxy_pass http://127.0.0.1:9876;
     	}
     }
 }
