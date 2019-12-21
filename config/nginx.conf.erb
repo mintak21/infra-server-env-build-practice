@@ -10,8 +10,8 @@ events {
 # httpコンテキスト：必須
 http {
 	# ログ出力設定
-	access_log log/nginx/access.log;
-	error_log  log/nginx/error.log;
+	access_log /usr/local/etc/nginx_access.log;
+	error_log  /usr/local/etc/nginx_errors.log;
 	upstream application_server {
 			server unix:/tmp/nginx.socket fail_timeout=0;
 	}
