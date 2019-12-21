@@ -24,7 +24,7 @@ http {
 		proxy_set_header    Host                  $host;   # Hostというところは$host変数をいれて送る
         proxy_set_header    X-Forwarded-Host      $host;
 
-		# /のルートにきた時にhttp://127.0.0.1:9876にリバースプロキシする
+		# /のルートにきた時にunix:/tmp/nginx.socketを通じてリバースプロキシする
     	location / {
         	proxy_pass http://application_server;
     	}
