@@ -10,7 +10,7 @@ reload = False
 
 # Logging
 accesslog = '-'
-loglevel = 'debug'
+loglevel = 'info'
 
 # Proc Name
 proc_name = 'Infrastructure-Practice-Flask'
