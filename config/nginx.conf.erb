@@ -9,8 +9,15 @@ events {
 
 # httpコンテキスト：必須
 http {
+	# ログ出力設定
+	access_log log/nginx/access.log;
+	error_log  log/nginx/error.log;
+	upstream application_server {
+			server unix:/tmp/nginx.socket fail_timeout=0;
+	}
+
     server {
-    	listen  9123;                      # 9123ポートで待つ
+    	listen  <%= ENV["PORT"] %>;        # ポートはherokuが用意したものを利用
     	server_name INFRA-PRACTICE-NGINX;  # INFRA-PRACTICE-NGINXという名前のサーバ
 		charset UTF-8;                     # ヘッダの文字コードはUTF-8
 
@@ -19,11 +26,11 @@ http {
 
 		# /のルートにきた時にhttp://127.0.0.1:9876にリバースプロキシする
     	location / {
-        	proxy_pass http://127.0.0.1:9876;
+        	proxy_pass http://$application_server;
     	}
 
 		location /health {
-        	proxy_pass http://127.0.0.1:9876/health;
+        	proxy_pass http://$application_server/health;
     	}
     }
 }
