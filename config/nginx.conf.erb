@@ -1,36 +1,61 @@
-# ルートコンテキスト
-# Workerプロセスは1つ
-worker_processes  1;
+daemon off;
+worker_processes auto;
 
-# eventsコンテキスト：必須
 events {
-	worker_connections 512; #コネクション数の制限
+   use epoll;
+   accept_mutex on;
+   worker_connections 1024;
+   multi_accept on;
 }
 
-# httpコンテキスト：必須
 http {
-	# ログ出力設定
-	access_log nginx_access.log;
-	error_log  nginx_errors.log;
-	upstream application_server {
-			server unix:/tmp/nginx.socket fail_timeout=0;
-	}
+   server_tokens off;
+   gzip on;
+   gzip_min_length 250;
 
-    server {
-    	listen  <%= ENV["PORT"] %>;        # ポートはherokuが用意したものを利用
-    	server_name INFRA-PRACTICE-NGINX;  # INFRA-PRACTICE-NGINXという名前のサーバ
-		charset UTF-8;                     # ヘッダの文字コードはUTF-8
+   access_log off;
+   error_log logs/nginx/error.log crit;
 
-		proxy_set_header    Host                  $host;   # Hostというところは$host変数をいれて送る
-        proxy_set_header    X-Forwarded-Host      $host;
+   include mime.types;
+   default_type application/octet-stream;
 
-		# /のルートにきた時にunix:/tmp/nginx.socketを通じてリバースプロキシする
-    	location / {
-        	proxy_pass http://application_server;
-    	}
+   upstream app_server {
+      server unix:/tmp/nginx.socket fail_timeout=0;
+   }
 
-		location /health {
-        	proxy_pass http://application_server/health;
-    	}
-    }
+   server {
+      listen <%= ENV["PORT"] %>;
+      server_name example.com default_server;
+    
+
+      root /app/frontend/build;
+      index index.html;
+      location / {
+          try_files $uri /$uri index.html;
+      }     
+ 
+      location ^~ /api {
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header Host $server_name;
+         proxy_redirect off;
+         proxy_pass http://app_server;
+      }
+      location ^~ /admin {
+         proxy_set_header Host $http_host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header X-Forwarded-Host $http_host;
+         proxy_redirect off;
+         proxy_pass http://app_server;
+      }
+        
+      # static
+      location ~* \.(jpg|jpeg|png|gif|ico|svg|otf)$ {
+            expires 30d;
+        }
+        location ~* \.(css|js)$ {
+            expires 7d;
+        }
+   }
 }
