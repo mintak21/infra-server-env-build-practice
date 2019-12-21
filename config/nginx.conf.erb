@@ -26,11 +26,11 @@ http {
 
 		# /のルートにきた時にhttp://127.0.0.1:9876にリバースプロキシする
     	location / {
-        	proxy_pass http://$application_server;
+        	proxy_pass http://application_server;
     	}
 
 		location /health {
-        	proxy_pass http://$application_server/health;
+        	proxy_pass http://application_server/health;
     	}
     }
 }
