@@ -22,4 +22,5 @@ worker_class = 'sync'
 
 def when_ready(server):
     # Nginxサーバに対して、gunicornがコネクション確立していることを通知するために必要
+    # Heroku/nginx-buildpacks専用設定
     open('/tmp/app-initialized', 'w').close()
