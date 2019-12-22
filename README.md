@@ -8,7 +8,7 @@
 5. AnsibleやK8sを利用してさらなる管理効率化
 
 # Tips
-- Step1まとめ　https://qiita.com/mintak21/private/eeba4654a0db21abcb1c
+- Step1まとめ　https://qiita.com/mintak21/items/eeba4654a0db21abcb1c
 
 
 - まずNginx-Gunicorn間はソケットで。(ポートがややこしいような気がしたのと、この例ばかり出てきたため)
