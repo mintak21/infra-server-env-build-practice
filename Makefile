@@ -10,7 +10,7 @@ build_web:
 	docker image build -f deployment/dockerfiles/web-server/Dockerfile -t $(WEB_SERVER_TAG) .
 
 run_app: build_app
-	docker run --rm --name app-server -p 9876:9876 --network bridge $(APP_SERVER_TAG)
+	docker run --rm --name app-server --network bridge $(APP_SERVER_TAG)
 
 run_web: build_web
 	docker run --rm --name web-server -p 9090:9123 --network bridge $(WEB_SERVER_TAG)
