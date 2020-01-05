@@ -9,8 +9,11 @@ build_app:
 build_web:
 	docker image build -f deployment/dockerfiles/web-server/Dockerfile -t $(WEB_SERVER_TAG) .
 
+run:
+	docker-compose -f deployment/docker-compose/docker-compose.yaml up
+
 run_app: build_app
-	docker run --rm --name app-server -p 9876:9876 --network bridge $(APP_SERVER_TAG)
+	docker run --rm --name app-server --network bridge $(APP_SERVER_TAG)
 
 run_web: build_web
 	docker run --rm --name web-server -p 9090:9123 --network bridge $(WEB_SERVER_TAG)
@@ -28,4 +31,4 @@ cleanup:
 	docker image rm $(WEB_SERVER_TAG)
 
 # ファイルを作成しないことを事前にmakeへ通知
-.PHONY: run_app run_web cleanup stop restart
+.PHONY: run run_app run_web cleanup stop restart
