@@ -7,6 +7,13 @@
 4. DBサーバ(PostgresSQL)をかませる。[Order Changed]
 5. Ansible等を利用してさらなる管理効率化。
 
+# Commands
+
+* make build - app-server、web-serverコンテナイメージをビルド
+* make run_web - webサーバコンテナを起動
+* make run_app - appサーバコンテナを起動
+* make cleanup - 停止コンテナを破棄、さらにapp-server、web-serverコンテナイメージを削除
+
 # Tips
 ## docker
 
