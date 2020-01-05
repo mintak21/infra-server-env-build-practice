@@ -1,79 +1,93 @@
 # 概要
 以下の練習を行うためのリポジトリ。
 ※ApplicationサーバはFlaskで作成。このサーバの処理内容はhealthチェックAPIくらいしか持たない(この部分はこのリポジトリのコア目的ではないため)
-1. Nginx+Gunicorn(uWSGI)にてWebサーバ+APPサーバの構成をローカルで立ち上げられるようにする。
-2. 1の設定をheroku上でデプロイ。
-3. DBサーバ(PostgresSQL)をかませる。
-4. Webサーバ、APPサーバ、DBサーバをDocker化
-5. Ansibleを利用してさらなる管理効率化
+1. Nginx+Gunicorn(uWSGI)にてWebサーバ+APPサーバの構成をローカルで立ち上げられるようにする。[Completed]
+2. 1の設定をheroku上でデプロイ。[Skip]
+3. Webサーバ、APPサーバをDocker化。[Now]
+4. DBサーバ(PostgresSQL)をかませる。[Order Changed]
+5. Ansible等を利用してさらなる管理効率化。
+
+# Commands
+
+* make build - app-server、web-serverコンテナイメージをビルド
+* make run_web - webサーバコンテナを起動
+* make run_app - appサーバコンテナを起動
+* make cleanup - 停止コンテナを破棄、さらにapp-server、web-serverコンテナイメージを削除
 
 # Tips
-## Gunicorn
-WSGI対応しているWebアプリケーション
-- 起動方法
+## docker
+
+### イメージの作成
+
 ```bash
-gunicorn {エントリポイントとなるファイル名}:{ファイル内のFlaskインスタンス変数名}
+docker image build -f deployment/dockerfiles/web-server/Dockerfile -t centos:nginxtest . # 最後の「.」がカレントディレクトリで実行の意
 ```
-※停止はCtrl+C
 
-- オプション
-   - -c {CONFIG_FILE} : 設定ファイルの指定。ファイルの記載内容は http://docs.gunicorn.org/en/latest/settings.html
+#### オプション
+
+* -f {DOCKER_FILE} : Dockerファイルの指定。
+* -t タグの指定.「:」の左側がリポジトリ名称、右側がタグ名称となる。
 
 
-## Nginx
-- 起動
+### コンテナ作成
+
 ```bash
-nginx
+docker run --rm --name nginx_test -p 9090:9123 centos:nginxtest
 ```
 
-- 起動しているかの確認
+#### オプション
+
+* --rm : 終了時、自動的にコンテナを削除
+* --name : コンテナの名称を指定
+* -p : ポートフォワーディング。左側がDockerコンテナのポート、右側がホストPCのポート。
+
+### その他のDockerコマンド
+
+* docker ps : 現在稼働中のコンテナの一覧。「-a」をつけるとすべてのコンテナを表示。
+
 ```bash
-ps aux | grep nginx
-# ここでnginx: master processと出てきた場合はnginxが動いている。
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                            NAMES
+bc967a8d3527        centos:nginxtest    "nginx -g 'daemon of…"   4 seconds ago       Up 2 seconds        80/tcp, 0.0.0.0:9090->9123/tcp   nginx_test
 
-# PORTの確認ができるコマンド
-lsof -i -P | grep nginx
-# nginx     41845 mintak    6u  IPv4 0x595e7f947462ada5      0t0  TCP *:9123 (LISTEN)
 ```
 
-- 停止
+* docker images/ docker image ls : イメージ一覧。「-a」をつけると中間イメージも含めて表示
+* docker container rm {CONTAINER_ID} : 指定したコンテナを削除
+* docker image rm {IMAGE_ID} : 指定したイメージを削除。ただし、指定イメージで作成されたコンテナが存在している場合エラーとなる。この場合、コンテナを削除してからイメージを削除する必要あり。
+* docker exec {CONTAINER_NAME} {COMMAND} : 稼働中のコンテナ内で{COMMAND}を実行。結果はコンソールに表示。
+* docker attach {CONTAINER_NAME} : 稼働中のコンテナ内部に入る。Ctrl+Qでホストの戻ることができる。
+
+## ホストOS上のコンテナ間通信
+
+`link` or `network`での接続が可能。ただし`link`は公式ドキュメント上で`legacy feature`とされており、推奨されていない。よって`network`よりデフォルトで提供されるBridgeインターフェースを用いる。
+
+* ネットワークの確認
 ```bash
-nginx -s stop
+$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+518552b941b8        bridge              bridge              local <-使うのはこれ
+be46431a0b28        host                host                local
+50e2c508a603        none                null                local
 ```
-※　psで調べたPIDでkillするのでもよい。
 
-- オプション
-   - -c {CONFIG_FILE} : 設定ファイルの指定。default: (/usr/local)/etc/nginx/nginx.conf
-   ※どうも相対パスだと、カレントからではなくてnginxのルートパスからの相対パスになっている様子
-
-### Configファイルの設定
-- 一例
-```conf
-# Workerプロセスは1つ
-worker_processes  1;
-
-# events部分は必須
-events {
-	worker_connections 512; #コネクション数の制限
-}
-
-# http部分も必須
-http {
-    server {
-    	listen  9123;
-    	server_name INFRA-PRACTICE-NGINX;
-		charset UTF-8;
-
-		proxy_set_header    Host    $host;
-		proxy_set_header    X-Real-IP    $remote_addr;
-        proxy_set_header    X-Forwarded-Host       $host;
-        proxy_set_header    X-Forwarded-Server    $host;
-        proxy_set_header    X-Forwarded-For    $proxy_add_x_forwarded_for;
-
-        # localhost:9123/をporxy_passにリバースプロキシでつなぐ
-    	location / {
-        	proxy_pass http://127.0.0.1:9876;
-    	}
-    }
-}
+* 独自Bridgeネットワークの作成
+```bash
+docker network create --driver bridge {NW_NAME}
+docker network inspect {NW_NAME}  # 確認用コマンド
 ```
+
+* コンテナをネットワークに所属させて起動
+```bash
+docker container run --network {NW_NAME} {IMAGE_NAME}
+```
+
+
+### 詰まったところ
+nginxコンテナ->gunicornコンテナへの通信網の確立。
+おそらく以下の2つのやり方があって、後者を選択した。
+
+1. ホストPCの共通箇所を両コンテナにマウント、ここをベースにしてソケット通信
+1. プロキシ接続として、Nginxの設定ファイルのパスでapp-serverのコンテナIPを書くorhost設定を行う
+　※docker単体ではホスト解決はうまくすることができない、docker-composeだと可能。
+
