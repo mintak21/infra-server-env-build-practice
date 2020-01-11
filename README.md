@@ -3,18 +3,32 @@
 ※ApplicationサーバはFlaskで作成。このサーバの処理内容はhealthチェックAPIくらいしか持たない(この部分はこのリポジトリのコア目的ではないため)
 1. Nginx+Gunicorn(uWSGI)にてWebサーバ+APPサーバの構成をローカルで立ち上げられるようにする。[Completed]
 2. 1の設定をheroku上でデプロイ。[Skip]
-3. Webサーバ、APPサーバをDocker化。[Now]
-4. DBサーバ(PostgresSQL)をかませる。[Order Changed]
-5. Ansible等を利用してさらなる管理効率化。
+3. Webサーバ、APPサーバをDocker化。[Completed]
+4. 3をdocker-composeで管理[Now]
+5. DBサーバ(PostgresSQL)をかませる。[Order Changed]
+6. Ansible等を利用してさらなる管理効率化。
 
 # Commands
 
 * make build - app-server、web-serverコンテナイメージをビルド
+* make run     - appサーバ、webサーバのコンテナをdocker-composeにて起動。基本はこれを利用。
 * make run_web - webサーバコンテナを起動
 * make run_app - appサーバコンテナを起動
 * make cleanup - 停止コンテナを破棄、さらにapp-server、web-serverコンテナイメージを削除
 
 # Tips
+## docker-compose
+1つのYAMLファイルに複数のDockerコンテナ定義を行い、
+複数コンテナの管理、連携を効率化するツール。k8sよりも手軽に使える分、k8sよりもできることはかなり少ない。ローカルでLTレベルの動作確認を行うのであればこれで十分だと思われる。
+
+### 起動コマンド
+```bash
+docker-compose -f {YAML_FILE} up -d
+```
+### オプション
+* -f {YAML_FILE} : 起動時のyamlファイルを指定。指定なしだとカレントの「docker-compose.yml」が設定される。
+* -d : upのオプション。バックグラウンドで実行される。逆に-dを指定しなければ、ターミナル上にcompose構成コンテナのログを見ることができる。
+
 ## docker
 
 ### イメージの作成
@@ -81,13 +95,3 @@ docker network inspect {NW_NAME}  # 確認用コマンド
 ```bash
 docker container run --network {NW_NAME} {IMAGE_NAME}
 ```
-
-
-### 詰まったところ
-nginxコンテナ->gunicornコンテナへの通信網の確立。
-おそらく以下の2つのやり方があって、後者を選択した。
-
-1. ホストPCの共通箇所を両コンテナにマウント、ここをベースにしてソケット通信
-1. プロキシ接続として、Nginxの設定ファイルのパスでapp-serverのコンテナIPを書くorhost設定を行う
-　※docker単体ではホスト解決はうまくすることができない、docker-composeだと可能。
-
