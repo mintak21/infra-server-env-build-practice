@@ -11,10 +11,13 @@
 # Commands
 
 * make build - app-server、web-serverコンテナイメージをビルド
-* make run     - appサーバ、webサーバのコンテナをdocker-composeにて起動。基本はこれを利用。
-* make run_web - webサーバコンテナを起動
+* make run_foreground     - appサーバ、webサーバのコンテナをdocker-composeにて`Foreground`起動
+* make run_background     - appサーバ、webサーバのコンテナをdocker-composeにて`Background`起動
+* make stop - コンテナを停止
+* make restart - コンテナを再起動
 * make run_app - appサーバコンテナを起動
-* make cleanup - 停止コンテナを破棄、さらにapp-server、web-serverコンテナイメージを削除
+* make clean - コンテナとネットワークを削除
+* make clean_all - コンテナ、ネットワーク、イメージ、ボリュームを削除
 
 # Tips
 ## docker-compose
@@ -28,6 +31,14 @@ docker-compose -f {YAML_FILE} up -d
 ### オプション
 * -f {YAML_FILE} : 起動時のyamlファイルを指定。指定なしだとカレントの「docker-compose.yml」が設定される。
 * -d : upのオプション。バックグラウンドで実行される。逆に-dを指定しなければ、ターミナル上にcompose構成コンテナのログを見ることができる。
+
+### ログ取得(バックグランド起動時)
+```bash
+docker-compose -f {YAML_FILE} logs --tail=all -t
+```
+### オプション
+* --tail : allだとすべて、整数値で、後ろからの表示行数を指定可能。
+* -t : タイムスタンプをくっつけて表示する。
 
 ## docker
 

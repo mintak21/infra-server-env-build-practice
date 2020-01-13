@@ -1,34 +1,26 @@
 APP_SERVER_TAG = debian:app-server
 WEB_SERVER_TAG = centos:web-server
 
-build: build_app build_web
+build:
+	docker-compose -f deployment/docker-compose/docker-compose.yaml build --no-cache
 
-build_app:
-	docker build -f deployment/dockerfiles/app-server/Dockerfile -t $(APP_SERVER_TAG) .
-
-build_web:
-	docker image build -f deployment/dockerfiles/web-server/Dockerfile -t $(WEB_SERVER_TAG) .
-
-run:
+run_foreground: build
 	docker-compose -f deployment/docker-compose/docker-compose.yaml up
 
-run_app: build_app
-	docker run --rm --name app-server --network bridge $(APP_SERVER_TAG)
-
-run_web: build_web
-	docker run --rm --name web-server -p 9090:9123 --network bridge $(WEB_SERVER_TAG)
+run_background: build
+	docker-compose -f deployment/docker-compose/docker-compose.yaml up -d
 
 stop:
-	docker stop $(APP_SERVER_TAG)
-	docker stop $(WEB_SERVER_TAG)
+	docker-compose -f deployment/docker-compose/docker-compose.yaml stop
 
 restart:
-	docker restart $(APP_SERVER_TAG)
-	docker restart $(WEB_SERVER_TAG)
+	docker-compose -f deployment/docker-compose/docker-compose.yaml restart
 
-cleanup:
-	docker image rm $(APP_SERVER_TAG)
-	docker image rm $(WEB_SERVER_TAG)
+clean:
+	docker-compose -f deployment/docker-compose/docker-compose.yaml down
+
+clean_all:
+	docker-compose -f deployment/docker-compose/docker-compose.yaml down --rmi all -v
 
 # ファイルを作成しないことを事前にmakeへ通知
-.PHONY: run run_app run_web cleanup stop restart
+.PHONY: run_foreground run_background clean clean_all stop restart
