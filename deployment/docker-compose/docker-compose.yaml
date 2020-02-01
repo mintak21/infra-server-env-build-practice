@@ -11,6 +11,8 @@ services:       # コンテナを定義
                     - uwsgi-server  # my_host_network上ではこのエイリアスでコンテナを指定可能
         expose:
             - 9876                  # このポートをLISTEN状態にする
+        depends_on:
+            - db-server
         restart: always             # サービス再起動ポリシー
 
     web-server:
@@ -27,6 +29,22 @@ services:       # コンテナを定義
         depends_on:         # 依存関係を指定。web-serverの起動より前にapp-serverを起動するようになる
             - app-server
         restart: always
+
+    db-server:
+        container_name: postgres-server
+        image: postgres:12-alpine
+        networks:
+            my_host_network:
+                aliases:
+                    - postgres-server
+        ports:
+            - 5234:5432
+        volumes:           # bind方式でホスト側のディレクトリをコンテナ側に提供する
+            - type: bind
+              source: ../../_db/init
+              target: /docker-entrypoint-initdb.d   # このディレクトリにあるSQLファイルが起動時実行される
+        restart: always
+
 
 # ネットワークの設定
 # ホストPC上での複数コンテナ起動のため、overlayではなくbridgeを使用
