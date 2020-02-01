@@ -23,7 +23,7 @@ services:       # コンテナを定義
                 aliases:
                     - nginx-server
         ports:
-            - 9090:9123
+            - 8000:9123
         depends_on:         # 依存関係を指定。web-serverの起動より前にapp-serverを起動するようになる
             - app-server
         restart: always
