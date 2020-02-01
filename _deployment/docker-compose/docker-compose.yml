@@ -4,7 +4,7 @@ services:       # コンテナを定義
         container_name: app-server  # コンテナの名称
         build:
             context: ../../         # docker buildするときのパス、このファイルのあるところからの相対パス
-            dockerfile: deployment/dockerfiles/app-server/Dockerfile # contextのパスから指定
+            dockerfile: _deployment/dockerfiles/app-server/Dockerfile # contextのパスから指定
         networks:                   # 属するネットワークの設定
             my_host_network:        # 後述のmy_host_networkに属する
                 aliases:
@@ -17,7 +17,7 @@ services:       # コンテナを定義
         container_name: web-server
         build:
             context: ../../
-            dockerfile: deployment/dockerfiles/web-server/Dockerfile
+            dockerfile: _deployment/dockerfiles/web-server/Dockerfile
         networks:
             my_host_network:
                 aliases:
