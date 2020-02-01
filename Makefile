@@ -27,8 +27,7 @@ restart:
 	docker restart $(WEB_SERVER_TAG)
 
 cleanup:
-	docker image rm $(APP_SERVER_TAG)
-	docker image rm $(WEB_SERVER_TAG)
+	docker-compose -f deployment/docker-compose/docker-compose.yaml down --rmi all -v
 
 # ファイルを作成しないことを事前にmakeへ通知
 .PHONY: run run_app run_web cleanup stop restart
