@@ -5,7 +5,7 @@ FROM python:3.8-slim-buster
 RUN mkdir -p /app/config
 COPY requirements.txt /app/requirements.txt
 COPY config/gunicorn_settings.py /app/config/gunicorn_settings.py
-COPY flask_app.py /app/flask_app.py
+COPY ./app /app
 
 # パッケージのインストール
 RUN pip install -r /app/requirements.txt
