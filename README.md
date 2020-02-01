@@ -16,6 +16,12 @@
 * make run_app - appサーバコンテナを起動
 * make cleanup - 停止コンテナを破棄、さらにapp-server、web-serverコンテナイメージを削除
 
+# Access
+
+http://localhost:9090/
+http://localhost:9090/health/
+http://localhost:9090/test/
+
 # Tips
 ## docker-compose
 1つのYAMLファイルに複数のDockerコンテナ定義を行い、
