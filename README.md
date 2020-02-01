@@ -18,9 +18,9 @@
 
 # Access
 
-http://localhost:9090/
-http://localhost:9090/health/
-http://localhost:9090/test/
+http://localhost:8000/
+http://localhost:8000/health/
+http://localhost:8000/test/
 
 # Tips
 ## docker-compose
