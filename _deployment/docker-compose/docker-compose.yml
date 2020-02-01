@@ -39,9 +39,9 @@ services:       # コンテナを定義
             - 5234:5432
         volumes:           # bind方式でホスト側のディレクトリをコンテナ側に提供する
             - type: bind
-                source: ../../_db/init
-                target: /docker-entrypoint-initdb.d   # このディレクトリにあるSQLファイルが起動時実行される
-                read_only: true
+              source: ../../_db/init
+              target: /docker-entrypoint-initdb.d   # このディレクトリにあるSQLファイルが起動時実行される
+              read_only: true
         restart: always
 
 # ネットワークの設定
