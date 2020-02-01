@@ -43,6 +43,7 @@ services:       # コンテナを定義
             - type: bind
               source: ../../_db/init
               target: /docker-entrypoint-initdb.d   # このディレクトリにあるSQLファイルが起動時実行される
+              read_only: true
         restart: always
 
 
