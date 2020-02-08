@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 # パッケージのインストール
 RUN apk update \
-  && apk add --virtual .build-deps gcc python3-dev musl-dev \
+  && apk add --virtual .build-deps gcc musl-dev \
   && apk add postgresql-dev \
   && pip install -r /application/requirements.txt \
   && apk --purge del .build-deps
